@@ -105,6 +105,8 @@ namespace cli
                 return *this;
             }
 
+            ~OutStream() {}
+
         private:
             friend class Cli;
 
@@ -310,6 +312,8 @@ namespace cli
 
         void Prompt();
 
+        void ClearPrompt();
+
         void Current(Menu* menu) { current = menu; }
 
         std::ostream& OutStream() { return out; }
@@ -352,6 +356,7 @@ namespace cli
         std::ostream& out;
         std::function< void(std::ostream&)> exitAction = []( std::ostream& ){};
         detail::History history;
+        bool promptPrinted;
     };
 
     // ********************************************************************
@@ -733,21 +738,26 @@ namespace cli
             current(cli.RootMenu()),
             globalScopeMenu(std::make_unique< Menu >()),
             out(_out),
-            history(historySize)
+            history(historySize),
+            promptPrinted{false}
         {
             history.LoadCommands(cli.GetCommands());
 
             Cli::Register(out);
+#ifdef CLI_HELP_CMD
             globalScopeMenu->Insert(
                 "help",
                 [this](std::ostream&){ Help(); },
                 "This help message"
             );
+#endif
+#ifdef CLI_EXIT_CMD
             globalScopeMenu->Insert(
                 "exit",
                 [this](std::ostream&){ Exit(); },
                 "Quit the session"
             );
+#endif
 #ifdef CLI_HISTORY_CMD
             globalScopeMenu->Insert(
                 "history",
@@ -759,6 +769,7 @@ namespace cli
 
     inline void CliSession::Feed(const std::string& cmd)
     {
+        promptPrinted = false;
         std::vector<std::string> strs;
         detail::split(strs, cmd);
         if (strs.empty()) return; // just hit enter
@@ -791,11 +802,30 @@ namespace cli
 
     inline void CliSession::Prompt()
     {
-        out << beforePrompt
+        if (promptPrinted) {
+            return;
+        }
+        std::cout << beforePrompt
             << current->Prompt()
             << afterPrompt
             << "> "
             << std::flush;
+        promptPrinted = true;
+    }
+
+    inline void CliSession::ClearPrompt()
+    {
+        if (promptPrinted) {
+            std::stringstream _ss_prompt{""};
+            _ss_prompt << beforePrompt
+                << current->Prompt()
+                << afterPrompt
+                << "> ";
+            std::string _prompt = _ss_prompt.str();
+            memset(_prompt.data(), '\b', _prompt.length());
+            std::cout << _prompt << std::flush;
+            promptPrinted = false;
+        }
     }
 
     inline void CliSession::Help() const

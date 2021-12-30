@@ -52,13 +52,12 @@ enum class Symbol
 class Terminal
 {
   public:
-    explicit Terminal(std::ostream &_out) : out(_out) {}
-
+  
     void ResetCursor() { position = 0; }
 
     void SetLine(const std::string &newLine)
     {
-        out << beforeInput
+        std::cout << beforeInput
             << std::string(position, '\b') << newLine
             << afterInput << std::flush;
 
@@ -66,9 +65,9 @@ class Terminal
         // to clear the rest of the string
         if (newLine.size() < currentLine.size())
         {
-            out << std::string(currentLine.size() - newLine.size(), ' ');
+            std::cout << std::string(currentLine.size() - newLine.size(), ' ');
             // and go back
-            out << std::string(currentLine.size() - newLine.size(), '\b') << std::flush;
+            std::cout << std::string(currentLine.size() - newLine.size(), '\b') << std::flush;
         }
 
         currentLine = newLine;
@@ -95,13 +94,13 @@ class Terminal
                 // remove the char from buffer
                 currentLine.erase(currentLine.begin() + pos);
                 // go back to the previous char
-                out << '\b';
+                std::cout << '\b';
                 // output the rest of the line
-                out << std::string(currentLine.begin() + pos, currentLine.end());
+                std::cout << std::string(currentLine.begin() + pos, currentLine.end());
                 // remove last char
-                out << ' ';
+                std::cout << ' ';
                 // go back to the original position
-                out << std::string(currentLine.size() - position + 1, '\b') << std::flush;
+                std::cout << std::string(currentLine.size() - position + 1, '\b') << std::flush;
                 break;
             }
             case KeyType::up:
@@ -113,14 +112,14 @@ class Terminal
             case KeyType::left:
                 if (position > 0)
                 {
-                    out << '\b' << std::flush;
+                    std::cout << '\b' << std::flush;
                     --position;
                 }
                 break;
             case KeyType::right:
                 if (position < currentLine.size())
                 {
-                    out << beforeInput
+                    std::cout << beforeInput
                         << currentLine[position]
                         << afterInput << std::flush;
                     ++position;
@@ -128,7 +127,7 @@ class Terminal
                 break;
             case KeyType::ret:
             {
-                out << "\r\n";
+                std::cout << "\r\n";
                 auto cmd = currentLine;
                 currentLine.clear();
                 position = 0;
@@ -145,13 +144,13 @@ class Terminal
                     const auto pos = static_cast<std::string::difference_type>(position);
 
                     // output the new char:
-                    out << beforeInput << c;
+                    std::cout << beforeInput << c;
                     // and the rest of the string:
-                    out << std::string(currentLine.begin() + pos, currentLine.end())
+                    std::cout << std::string(currentLine.begin() + pos, currentLine.end())
                         << afterInput;
 
                     // go back to the original position
-                    out << std::string(currentLine.size() - position, '\b') << std::flush;
+                    std::cout << std::string(currentLine.size() - position, '\b') << std::flush;
 
                     // update the buffer and cursor position:
                     currentLine.insert(currentLine.begin() + pos, c);
@@ -168,11 +167,11 @@ class Terminal
                 const auto pos = static_cast<std::string::difference_type>(position);
 
                 // output the rest of the line
-                out << std::string(currentLine.begin() + pos + 1, currentLine.end());
+                std::cout << std::string(currentLine.begin() + pos + 1, currentLine.end());
                 // remove last char
-                out << ' ';
+                std::cout << ' ';
                 // go back to the original position
-                out << std::string(currentLine.size() - position, '\b') << std::flush;
+                std::cout << std::string(currentLine.size() - position, '\b') << std::flush;
                 // remove the char from buffer
                 currentLine.erase(currentLine.begin() + pos);
                 break;
@@ -181,7 +180,7 @@ class Terminal
             {
                 const auto pos = static_cast<std::string::difference_type>(position);
 
-                out << beforeInput
+                std::cout << beforeInput
                     << std::string(currentLine.begin() + pos, currentLine.end())
                     << afterInput << std::flush;
                 position = currentLine.size();
@@ -189,7 +188,7 @@ class Terminal
             }
             case KeyType::home:
             {
-                out << std::string(position, '\b') << std::flush;
+                std::cout << std::string(position, '\b') << std::flush;
                 position = 0;
                 break;
             }
@@ -204,7 +203,6 @@ class Terminal
   private:
     std::string currentLine;
     std::size_t position = 0; // next writing position in currentLine
-    std::ostream &out;
 };
 
 } // namespace detail

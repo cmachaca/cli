@@ -47,7 +47,7 @@ class InputHandler
 public:
     InputHandler(CliSession& _session, InputDevice& kb) :
         session(_session),
-        terminal(session.OutStream())
+        terminal()
     {
         kb.Register( [this](auto key){ this->Keypressed(key); } );
     }
