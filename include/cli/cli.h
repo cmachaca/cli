@@ -789,7 +789,7 @@ namespace cli
             if (!found) found = current->ScanCmds(strs, *this);
 
             if (!found) // error msg if not found
-                out << "wrong command: " << cmd << '\n';
+                out << "Wrong command: " << cmd << '\n';
         }
         catch(const std::exception& e)
         {
@@ -825,7 +825,7 @@ namespace cli
                 << afterPrompt
                 << "> ";
             std::string _prompt = _ss_prompt.str();
-            memset(_prompt.data(), '\b', _prompt.length());
+            memset((void*)_prompt.data(), '\b', _prompt.length());
             std::cout << _prompt << std::flush;
             promptPrinted = false;
         }
@@ -835,7 +835,7 @@ namespace cli
     {
         out << "Commands available:\n";
         globalScopeMenu->MainHelp(out);
-        current -> MainHelp( out );
+        current->MainHelp( out );
     }
 
     inline std::vector<std::string> CliSession::GetCompletions(std::string currentLine) const

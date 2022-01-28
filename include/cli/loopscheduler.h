@@ -65,7 +65,10 @@ public:
 
     void Run()
     {
-        while( ExecOne() ) {};
+        while(this->running) 
+        {
+            ExecOne();
+        };
     }
 
     bool Stopped() const
@@ -81,22 +84,17 @@ public:
         cv.notify_all();
     }
 
-    bool ExecOne()
+    void ExecOne()
     {
         std::function<void()> task;
         {
             std::unique_lock<std::mutex> lck(mtx);
             cv.wait(lck, [this](){ return !running || !tasks.empty(); });
-            if (!running)
-                return false;
             task = tasks.front();
             tasks.pop();
         }
-
         if (task)
             task();
-
-        return true;
     }
 
     bool PollOne()
